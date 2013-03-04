@@ -1,0 +1,8 @@
+{
+  "name": "event",
+  "version": "0.0.1",
+  "repo": "kaerus/components/event",
+  "description": "DOM events",
+  "scripts": ["index.js"],
+  "dependencies": {"kaerus/components/emitter":"*"}
+}
