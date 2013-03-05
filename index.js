@@ -1,17 +1,18 @@
 var Emitter = require('emitter');
 
 // Event /////////////////////////////////////////////////////////////////////////////
-// Code inspired from Secrets of the Javascript Ninja by John Resig 
-// Reference http://www.quirksmode.org/dom/events/ 
-
 
 var Event = {
     normalize: function(event) {
+        // normalize 'inspired' from Secrets of the Javascript Ninja by John Resig 
+        // Reference http://www.quirksmode.org/dom/events/ 
         function returnTrue() { return true; } 
         function returnFalse() { return false; }
 
         if (!event || !event.stopPropagation) { 
             var old = event || window.event;
+            // no event
+            if(!old) return;
             // Clone the old object so that we can modify the values 
             event = {};
             for (var prop in old) { 
