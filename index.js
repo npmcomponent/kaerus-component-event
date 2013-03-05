@@ -11,8 +11,6 @@ var Event = {
 
         if (!event || !event.stopPropagation) { 
             var old = event || window.event;
-            // no event
-            if(!old) return;
             // Clone the old object so that we can modify the values 
             event = {};
             for (var prop in old) { 
@@ -69,48 +67,50 @@ var Event = {
         }    
         return event;
     },
+    bind: function(el,ev,fn){
+        if(el.addEventListener){
+            el.addEventListener(ev, fn, false);
+        } else if (elm.attachEvent){
+            el.attachEvent('on' + ev, fn);
+        }  
+
+        return this;
+    },
+    unbind: function(el,ev,fn){
+        if(el.removeEventListener){
+            el.removeEventListener(ev, fn, false);
+        } else if (el.detachEvent){
+            el.detachEvent('on' + ev, fn);
+        }
+
+        return this;
+    },
     add: function(el,ev,fn){
 
         if(!el._event) {
             el._event = new Emitter();
-            addEventListener(el, ev, onEvent);
+            this.bind(el,ev,onEvent);
         }    
         
         el._event.on(ev,fn);
 
-        return el;
+        return this;
     },
     remove: function(el,ev,fn){
 
         if(el._event) {
             el._event.off(ev,fn);
             if(!el._event.hasListeners(ev))
-                removeEventListener(el, ev, onEvent);
+                this.unbind(el,ev,onEvent);
         }
 
         return this; 
     }   
 }
 
-
-function addEventListener(elm, eType, fn){
-    if(elm.addEventListener){
-        elm.addEventListener(eType, fn, false);
-    } else if (elm.attachEvent){
-        elm.attachEvent('on' + eType, fn);
-    }
-}
-
-function removeEventListener(elm, eType, fn){
-    if(elm.removeEventListener){
-        elm.removeEventListener(eType, fn, false);
-    } else if (elm.detachEvent){
-        elm.detachEvent('on' + eType, fn);
-    }
-}
-
 function onEvent(event) {
     event = Event.normalize(event);
+    if(!this._event) throw "onEvent has no emitter";
     this._event.emit(event.type,event);
 } 
 
