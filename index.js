@@ -139,16 +139,14 @@ var Event = {
     }   
 }
 
-function onDelegate(event) {
-    event = Event.normalize(event);
-    if(!this._event) throw "event has no emitter";
-    this._event.emit(event.type+'>'+event.target.id,event);
-}
-
 function onEvent(event) {
     event = Event.normalize(event);
     if(!this._event) throw "event has no emitter";
     this._event.emit(event.type,event);
 } 
+
+function onDelegate(event) {
+    this._event.emit(event.type+'>'+event.target.id,event);
+}
 
 module.exports = Event; 
