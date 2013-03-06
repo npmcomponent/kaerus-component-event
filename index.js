@@ -77,9 +77,6 @@ var Event = {
 
         return event;
     },
-    capture: function(ev,handler) {
-
-    },
     clone: function(event,obj) {
         obj = obj ? obj : {};
 
@@ -89,7 +86,6 @@ var Event = {
         return obj;
     },
     bind: function(el,ev,fn){
-
         if(el.addEventListener){
             el.addEventListener(ev, fn, false);
         } else if (elm.attachEvent){
@@ -134,28 +130,25 @@ var Event = {
 
         if(delegates.indexOf(ev) < 0) throw "Can not delegate " + ev;
 
-        if(!document._delegate) {
-            document._delegate = new Emitter();
-            delegates.forEach(function(type){
-                self.bind(document,type,onDelegate);
-            });
-        }
-        document._delegate.on(ev+'>'+el.id,fn);
+        this.add(document,ev,onDelegate);
+
+        document._event.on(ev+'>'+el.id,fn);
 
         return el;
     },
     undelegate: function(el,ev,fn){
-        if(document._delegate){
-            document._delegate.off(ev+'>'+el.id,fn);
+        if(document._event){
+            document._event.off(ev+'>'+el.id,fn);
         }
+
         return el;
     }   
 }
 
 function onDelegate(event) {
     event = Event.normalize(event);
-    if(!this._delegate) throw "event has no emitter";
-    this._delegate.emit(event.type+'>'+event.target.id,event);
+    if(!this._event) throw "event has no emitter";
+    this._event.emit(event.type+'>'+event.target.id,event);
 }
 
 function onEvent(event) {
