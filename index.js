@@ -112,7 +112,7 @@ var Event = {
         
         el._event.on(ev,fn);
 
-        return el;
+        return el._event;
     }, 
     remove: function(el,ev,fn){
 
@@ -122,17 +122,11 @@ var Event = {
                 this.unbind(el,ev,onEvent);
         }
 
-        return el; 
+        return el._event; 
     }, 
     delegate: function(el,ev,fn){
-        var self = this,
-            delegates = ['click','mouseup','mousedown','keyup','keydown','keypress'];
-
-        if(delegates.indexOf(ev) < 0) throw "Can not delegate " + ev;
-
-        this.add(document,ev,onDelegate);
-
-        document._event.on(ev+'>'+el.id,fn);
+        
+        this.add(document,ev,onDelegate).on(ev+'>'+el.id,fn);
 
         return el;
     },
