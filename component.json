@@ -1,6 +1,6 @@
 {
   "name": "event",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "repo": "kaerus-component/event",
   "description": "DOM events",
   "scripts": ["index.js"],

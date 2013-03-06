@@ -10,12 +10,9 @@ var Event = {
         function returnFalse() { return false; }
 
         if (!event || !event.stopPropagation) { 
-            var old = event || window.event;
             // Clone the old object so that we can modify the values 
-            event = {};
-            for (var prop in old) { 
-                event[prop] = old[prop];
-            }
+            event = this.clone(event || window.event);
+
             // The event occurred on this element 
             if (!event.target) {
                 event.target = event.srcElement || document;
@@ -59,31 +56,56 @@ var Event = {
             }
             // Handle key presses 
             event.which = event.charCode || event.keyCode;
-            // Fix button for mouse clicks: // 0 == left; 1 == middle; 2 == 
+            // Fix button for mouse clicks: // 0 == left; 1 == middle; 2 == right
             if (event.button != null) {
                 event.keyCode;
                 event.button = (event.button & 1 ? 0 : (event.button & 4 ? 1 : (event.button & 2 ? 2 : 0)));
-            } 
+            }
+            // mouse scroll
+            event.wheelDelta = event.wheelDelta || -event.Detail * 40; 
         }    
+
+        return this.extend(event,this.methods);
+    },
+    methods: {
+        /* augment all events with these methods */
+    },
+    extend: function(event,obj) {
+        for(var o in obj) {
+            if(!event[o]) event[o] = obj[o];
+        }
+
         return event;
     },
+    capture: function(ev,handler) {
+
+    },
+    clone: function(event,obj) {
+        obj = obj ? obj : {};
+
+        for (var p in event) { 
+            obj[p] = event[p];
+        }
+        return obj;
+    },
     bind: function(el,ev,fn){
+
         if(el.addEventListener){
             el.addEventListener(ev, fn, false);
         } else if (elm.attachEvent){
             el.attachEvent('on' + ev, fn);
-        }  
+        }  else el['on' + ev] = fn;
 
-        return this;
+        return el;
     },
     unbind: function(el,ev,fn){
         if(el.removeEventListener){
             el.removeEventListener(ev, fn, false);
         } else if (el.detachEvent){
             el.detachEvent('on' + ev, fn);
-        }
+        } else el['on' + ev] = null;
 
-        return this;
+        return el;
     },
     add: function(el,ev,fn){
 
@@ -94,8 +116,8 @@ var Event = {
         
         el._event.on(ev,fn);
 
-        return this;
-    },
+        return el;
+    }, 
     remove: function(el,ev,fn){
 
         if(el._event) {
@@ -104,13 +126,41 @@ var Event = {
                 this.unbind(el,ev,onEvent);
         }
 
-        return this; 
+        return el; 
+    }, 
+    delegate: function(el,ev,fn){
+        var self = this,
+            delegates = ['click','mouseup','mousedown','keyup','keydown','keypress'];
+
+        if(delegates.indexOf(ev) < 0) throw "Can not delegate " + ev;
+
+        if(!document._delegate) {
+            document._delegate = new Emitter();
+            delegates.forEach(function(type){
+                self.bind(document,type,onDelegate);
+            });
+        }
+        document._delegate.on(ev+'>'+el.id,fn);
+
+        return el;
+    },
+    undelegate: function(el,ev,fn){
+        if(document._delegate){
+            document._delegate.off(ev+'>'+el.id,fn);
+        }
+        return el;
     }   
+}
+
+function onDelegate(event) {
+    event = Event.normalize(event);
+    if(!this._delegate) throw "event has no emitter";
+    this._delegate.emit(event.type+'>'+event.target.id,event);
 }
 
 function onEvent(event) {
     event = Event.normalize(event);
-    if(!this._event) throw "onEvent has no emitter";
+    if(!this._event) throw "event has no emitter";
     this._event.emit(event.type,event);
 } 
 
