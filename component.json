@@ -4,5 +4,6 @@
   "repo": "kaerus-component/event",
   "description": "DOM events",
   "scripts": ["index.js"],
-  "dependencies": {"kaerus-component/emitter":"*"}
+  "dependencies": {"kaerus-component/emitter":"*"},
+  "license": "Apache2_0"
 }
