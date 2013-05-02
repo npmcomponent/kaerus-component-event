@@ -149,8 +149,6 @@ var Event = {
 
         Event.bind(document,ev,onDelegate,true);
 
-        console.log("el",el);
-        console.log("Elem(el)",Elem(el));
         var guid = Elem(el).guid;
 
         Event.emitter.on(ev+'>'+guid,fn);
@@ -180,6 +178,7 @@ function onEvent(event) {
 
 function onDelegate(event) {
     var guid = Elem(event.target).guid;
+    
     Event.emitter.emit(event.type+'>'+guid,event);
 }
 
