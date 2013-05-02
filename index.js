@@ -1,12 +1,10 @@
-var Emitter = require('emitter');
+var Emitter = require('emitter'),
+    Elem = require('elem');
 
 // Event /////////////////////////////////////////////////////////////////////////////
 
 var Event = {
     emitter: new Emitter(),
-    store: {},
-    guid: 'data' + (new Date().getTime()),
-    guidCounter: 1,
     normalize: function(event) {
         // normalize 'inspired' from Secrets of the Javascript Ninja by John Resig 
         // Reference http://www.quirksmode.org/dom/events/ 
@@ -72,13 +70,7 @@ var Event = {
         return Event.extend(event,Event.methods);
     },
     methods: {
-        data: function(key,val){
-            var store = Event.getData(this.target);
 
-            if(val !== undefined) store[key] = val;
-
-            return store[key];
-        }
     },
     extend: function(event,obj) {
         for(var o in obj) {
@@ -122,17 +114,17 @@ var Event = {
         
         ev = ev[0];
 
-        var data = Event.getData(el);
+        var data = Elem(el).data();
 
-        if(!data.emitter) {
-            data.emitter = new Emitter();
+        if(!data.__emitter__) {
+            data.__emitter__ = new Emitter();
         }    
         
         Event.bind(el,ev,onEvent);
 
-        data.emitter.on(ev,fn);
+        data.__emitter__.on(ev,fn);
 
-        return data.emitter;
+        return data.__emitter__;
     }, 
     remove: function(el,ev,fn){
         ev = ev.split(' ');
@@ -143,80 +135,52 @@ var Event = {
         
         ev = ev[0];
 
-        var data = Event.getData(el);
+        var data = Elem(el).data();
 
-        if(data.emitter) {
-            data.emitter.off(ev,fn);
-            if(!data.emitter.hasListeners(ev))
+        if(data.__emitter__) {
+            data.__emitter__.off(ev,fn);
+            if(!data.__emitter__.hasListeners(ev))
                 Event.unbind(el,ev,onEvent);
         }
 
-        return data.emitter; 
+        return data.__emitter__; 
     }, 
     delegate: function(el,ev,fn){
 
         Event.bind(document,ev,onDelegate,true);
 
-        var guid = el[Event.guid];
-
-        if(!guid){
-            /* creates a guid */
-            Event.getData(el);
-            guid = el[Event.guid];
-        }
+        console.log("el",el);
+        console.log("Elem(el)",Elem(el));
+        var guid = Elem(el).guid;
 
         Event.emitter.on(ev+'>'+guid,fn);
 
         return el;
     },
     undelegate: function(el,ev,fn){
-        var guid = el[Event.guid];
+        var guid = Elem(el).guid;
 
         if(guid) {
             Event.emitter.off(ev+'>'+guid,fn);
         }
 
         return el;
-    },
-    getData: function(el){
-        var guid = el[Event.guid];
-        
-        if(!guid){
-            guid = el[Event.guid] = Event.guidCounter++;
-            Event.store[guid] = {};
-        }
-
-        return Event.store[guid];
-    },
-    removedata: function(el){
-        var guid = el[Event.guid];
-
-        if(!guid) return;
-
-        delete Event.store[guid];
-
-        try {
-            delete el[Event.guid];
-        } catch (e) {
-            if(el.removeAttribute){
-                el.removeAttribute(Event.guid);
-            }
-        }
-    }   
+    }
 }
 
 function onEvent(event) {
     event = Event.normalize(event);
 
-    var data = Event.getData(event.target);
+    var data = Elem(event.target).data();
 
-    if(!data.emitter) throw "event has no emitter";
+    if(!data.__emitter__) throw "event has no emitter";
 
-    data.emitter.emit(event.type,event);
+    data.__emitter__.emit(event.type,event);
 } 
 
 function onDelegate(event) {
-    Event.emitter.emit(event.type+'>'+event.target[Event.guid],event);
+    var guid = Elem(event.target).guid;
+    Event.emitter.emit(event.type+'>'+guid,event);
 }
 
 module.exports = Event; 
