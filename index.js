@@ -90,7 +90,7 @@ var Event = {
     bind: function(el,ev,fn,cap){
         if(el.addEventListener){
             el.addEventListener(ev, fn, !!cap);
-        } else if (elm.attachEvent){
+        } else if (el.attachEvent){
             el.attachEvent('on' + ev, fn);
         }  else el['on' + ev] = fn;
 
