@@ -7,7 +7,6 @@
     "index.js"
   ],
   "dependencies": {
-    "kaerus-component/elem": "*",
     "kaerus-component/emitter": "*"
   },
   "license": "Apache2_0"
