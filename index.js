@@ -2,9 +2,7 @@ var Emitter = require('emitter'),
     Elem = require('elem');
 
 // Event /////////////////////////////////////////////////////////////////////////////
-
-var Event = {
-    emitter: new Emitter(),
+var Event = new Emitter({
     normalize: function(event) {
         // normalize 'inspired' from Secrets of the Javascript Ninja by John Resig 
         // Reference http://www.quirksmode.org/dom/events/ 
@@ -114,17 +112,17 @@ var Event = {
         
         ev = ev[0];
 
-        var data = Elem(el).data();
+        var elem = Elem(el).data();
 
-        if(!data.__emitter__) {
-            data.__emitter__ = new Emitter();
+        if(!elem._events) {
+            new Emitter(elem);
         }    
         
         Event.bind(el,ev,onEvent);
 
-        data.__emitter__.on(ev,fn);
+        elem.on(ev,fn);
 
-        return data.__emitter__;
+        return el;
     }, 
     remove: function(el,ev,fn){
         ev = ev.split(' ');
@@ -135,23 +133,23 @@ var Event = {
         
         ev = ev[0];
 
-        var data = Elem(el).data();
+        var elem = Elem(el).data();
 
-        if(data.__emitter__) {
-            data.__emitter__.off(ev,fn);
-            if(!data.__emitter__.hasListeners(ev))
-                Event.unbind(el,ev,onEvent);
+        if(elem._events) {
+            elem.off(ev,fn);
+            if(!elem.hasListeners(ev))
+                this.unbind(el,ev,onEvent);
         }
 
-        return data.__emitter__; 
+        return el; 
     }, 
     delegate: function(el,ev,fn){
 
-        Event.bind(document,ev,onDelegate,true);
+        this.bind(document,ev,onDelegate,true);
 
         var guid = Elem(el).guid;
 
-        Event.emitter.on(ev+'>'+guid,fn);
+        this.on(ev+'>'+guid,fn);
 
         return el;
     },
@@ -159,27 +157,25 @@ var Event = {
         var guid = Elem(el).guid;
 
         if(guid) {
-            Event.emitter.off(ev+'>'+guid,fn);
+            this.off(ev+'>'+guid,fn);
         }
 
         return el;
     }
-}
+});
 
 function onEvent(event) {
     event = Event.normalize(event);
 
     var data = Elem(event.target).data();
 
-    if(!data.__emitter__) throw "event has no emitter";
-
-    data.__emitter__.emit(event.type,event);
+    data.emit(event.type,event);
 } 
 
 function onDelegate(event) {
     var guid = Elem(event.target).guid;
     
-    Event.emitter.emit(event.type+'>'+guid,event);
+    Event.emit(event.type+'>'+guid,event);
 }
 
 module.exports = Event; 
