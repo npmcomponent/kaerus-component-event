@@ -1,5 +1,4 @@
-var Emitter = require('emitter'),
-    Elem = require('elem');
+var Emitter = require('emitter');
 
 // Event /////////////////////////////////////////////////////////////////////////////
 var Event = new Emitter({
@@ -65,27 +64,9 @@ var Event = new Emitter({
             event.wheelDelta = event.wheelDelta || -event.Detail * 40; 
         }    
 
-        return Event.extend(event,Event.methods);
+        return event; 
     },
-    methods: {
-
-    },
-    extend: function(event,obj) {
-        for(var o in obj) {
-            if(!event[o]) event[o] = obj[o];
-        }
-
-        return event;
-    },
-    clone: function(event,obj) {
-        obj = obj ? obj : {};
-
-        for (var p in event) { 
-            obj[p] = event[p];
-        }
-        return obj;
-    },
-    bind: function(el,ev,fn,cap){
+    add: function(el,ev,fn,cap){
         if(el.addEventListener){
             el.addEventListener(ev, fn, !!cap);
         } else if (el.attachEvent){
@@ -94,7 +75,7 @@ var Event = new Emitter({
 
         return el;
     },
-    unbind: function(el,ev,fn){
+    remove: function(el,ev,fn){
         if(el.removeEventListener){
             el.removeEventListener(ev, fn, false);
         } else if (el.detachEvent){
@@ -102,80 +83,7 @@ var Event = new Emitter({
         } else el['on' + ev] = null;
 
         return el;
-    },
-    add: function(el,ev,fn){
-        ev = ev.split(' ');
-        
-        var i = ev.length;
-        
-        while(1 < i--) Event.add(el,ev[i],fn);
-        
-        ev = ev[0];
-
-        var elem = Elem(el).data();
-
-        if(!elem._events) {
-            new Emitter(elem);
-        }    
-        
-        Event.bind(el,ev,onEvent);
-
-        elem.on(ev,fn);
-
-        return el;
-    }, 
-    remove: function(el,ev,fn){
-        ev = ev.split(' ');
-
-        var i = ev.length;
-        
-        while(1 < i--) Event.remove(el,ev[i],fn);
-        
-        ev = ev[0];
-
-        var elem = Elem(el).data();
-
-        if(elem._events) {
-            elem.off(ev,fn);
-            if(!elem.hasListeners(ev))
-                this.unbind(el,ev,onEvent);
-        }
-
-        return el; 
-    }, 
-    delegate: function(el,ev,fn){
-
-        this.bind(document,ev,onDelegate,true);
-
-        var guid = Elem(el).guid;
-
-        this.on(ev+'>'+guid,fn);
-
-        return el;
-    },
-    undelegate: function(el,ev,fn){
-        var guid = Elem(el).guid;
-
-        if(guid) {
-            this.off(ev+'>'+guid,fn);
-        }
-
-        return el;
     }
 });
-
-function onEvent(event) {
-    event = Event.normalize(event);
-
-    var data = Elem(event.target).data();
-
-    data.emit(event.type,event);
-} 
-
-function onDelegate(event) {
-    var guid = Elem(event.target).guid;
-    
-    Event.emit(event.type+'>'+guid,event);
-}
 
 module.exports = Event; 
