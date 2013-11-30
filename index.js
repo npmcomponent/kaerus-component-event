@@ -1,5 +1,7 @@
 var Emitter = require('emitter');
 
+var augments;
+
 // Event /////////////////////////////////////////////////////////////////////////////
 var Event = new Emitter({
     normalize: function(event) {
@@ -10,7 +12,7 @@ var Event = new Emitter({
 
         if (!event || !event.stopPropagation) { 
             // Clone the old object so that we can modify the values 
-            event = Event.clone(event || window.event);
+            event = clone(event || window.event);
 
             // The event occurred on this element 
             if (!event.target) {
@@ -57,32 +59,13 @@ var Event = new Emitter({
             event.which = event.charCode || event.keyCode;
             // Fix button for mouse clicks: // 0 == left; 1 == middle; 2 == right
             if (event.button != null) {
-                event.keyCode;
                 event.button = (event.button & 1 ? 0 : (event.button & 4 ? 1 : (event.button & 2 ? 2 : 0)));
             }
             // mouse scroll
             event.wheelDelta = event.wheelDelta || -event.Detail * 40; 
         }    
-        /* augment event with user defined methods */
-        return Event.augment(event,Event.methods); 
-    },
-    methods: {
-        /* user defined event methods */
-    },
-    augment: function(event,obj) {
-        for(var o in obj) {
-            if(!event[o]) event[o] = obj[o];
-        }
-
-        return event;
-    },
-    clone: function(event,obj) {
-        obj = obj ? obj : {};
-
-        for (var p in event) { 
-            obj[p] = event[p];
-        }
-        return obj;
+        // note: Use Event.augment(...); to add user defined event attributes/methods
+        return augments ? extend(event,augments) : event; 
     },
     add: function(el,ev,fn,cap){
         if(el.addEventListener){
@@ -103,5 +86,43 @@ var Event = new Emitter({
         return el;
     }
 });
+
+Object.defineProperty(Event,'augment',{
+    get: function(){
+        return augments;
+    },
+    set: function(o,r){
+        if(typeof o === 'string' && r) {
+            if(augments && augments.hasOwnProperty(o))
+                delete augments[o];
+        }
+
+        if(typeof o === 'function' && o.name){
+           r = {};
+           r[o.name] = o;
+           o = r; 
+        }
+
+        if(typeof o !== 'object') return;
+
+        if(!augments) augments = Object.create(null);
+
+        return extend(augments,o);
+    }
+});
+
+function extend(e,o) {
+    for(var k in o) if(!e[k]) e[k] = o[k];
+
+    return e;
+}
+
+function clone(ev,o) {
+    o = o ? o : Object.create(null);
+
+    for (var p in ev) o[p] = ev[p];
+
+    return o;
+}
 
 module.exports = Event; 
