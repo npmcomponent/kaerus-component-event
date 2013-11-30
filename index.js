@@ -63,8 +63,26 @@ var Event = new Emitter({
             // mouse scroll
             event.wheelDelta = event.wheelDelta || -event.Detail * 40; 
         }    
+        /* augment event with user defined methods */
+        return Event.augment(event,Event.methods); 
+    },
+    methods: {
+        /* user defined event methods */
+    },
+    augment: function(event,obj) {
+        for(var o in obj) {
+            if(!event[o]) event[o] = obj[o];
+        }
 
-        return event; 
+        return event;
+    },
+    clone: function(event,obj) {
+        obj = obj ? obj : {};
+
+        for (var p in event) { 
+            obj[p] = event[p];
+        }
+        return obj;
     },
     add: function(el,ev,fn,cap){
         if(el.addEventListener){
