@@ -1,18 +1,9 @@
 {
-  "name": "event",
-  "version": "0.2.5",
-  "repo": "kaerus-component/event",
+  "name": "kaerus-component-event",
   "description": "DOM events",
-  "scripts": {
-  	"test":"make test"
-  },
-  "devDependencies": {
-  	"mocha": "*",
-    "chai": "*",
-    "should": "*",
-    "component": "*",
-    "mocha-phantomjs":"*",
-    "phantomjs":">=1.9.1"
+  "version": "0.2.5",
+  "dependencies": {
+    "kaerus-component-emitter": "git://github.com/npmcomponent/kaerus-component-emitter.git"
   },
   "license": "Apache2_0"
 }

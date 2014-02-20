@@ -1,4 +1,4 @@
-var Emitter = require('emitter');
+var Emitter = require('kaerus-component-emitter');
 
 var augments;
 
